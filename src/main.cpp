@@ -49,6 +49,12 @@ struct Agencia {
             if (voos[i].codigo == c) return i;
         return -1;
     }
+    int vooPlanejado(int codigo) {
+        int v = achaV(codigo);
+        if (v == -1) { cout << "ERRO: voo " << codigo << " nao cadastrado\n"; return -1; }
+        if (voos[v].estado != "planejado") { cout << "ERRO: voo " << codigo << " nao esta planejado\n"; return -1; }
+        return v;
+    }
 
     void cadastrarAstronauta(string cpf, string nome, int idade) {
         if (achaA(cpf) != -1) { cout << "ERRO: astronauta com CPF " << cpf << " ja cadastrado\n"; return; }
@@ -61,27 +67,25 @@ struct Agencia {
         cout << "OK: voo " << codigo << " cadastrado\n";
     }
     void adicionarAstronauta(string cpf, int codigo) {
-        int a = achaA(cpf), v = achaV(codigo);
+        int a = achaA(cpf);
         if (a == -1) { cout << "ERRO: astronauta " << cpf << " nao cadastrado\n"; return; }
-        if (v == -1) { cout << "ERRO: voo " << codigo << " nao cadastrado\n"; return; }
-        if (voos[v].estado != "planejado") { cout << "ERRO: voo " << codigo << " nao esta planejado\n"; return; }
+        int v = vooPlanejado(codigo);
+        if (v == -1) return;
         if (!astros[a].vivo) { cout << "ERRO: astronauta " << cpf << " esta morto\n"; return; }
         if (voos[v].tem(cpf)) { cout << "ERRO: astronauta " << cpf << " ja esta no voo " << codigo << "\n"; return; }
         voos[v].cpfs.push_back(cpf);
         cout << "OK: astronauta " << cpf << " adicionado ao voo " << codigo << "\n";
     }
     void removerAstronauta(string cpf, int codigo) {
-        int a = achaA(cpf), v = achaV(codigo);
-        if (a == -1) { cout << "ERRO: astronauta " << cpf << " nao cadastrado\n"; return; }
-        if (v == -1) { cout << "ERRO: voo " << codigo << " nao cadastrado\n"; return; }
-        if (voos[v].estado != "planejado") { cout << "ERRO: voo " << codigo << " nao esta planejado\n"; return; }
+        if (achaA(cpf) == -1) { cout << "ERRO: astronauta " << cpf << " nao cadastrado\n"; return; }
+        int v = vooPlanejado(codigo);
+        if (v == -1) return;
         if (!voos[v].remover(cpf)) { cout << "ERRO: astronauta " << cpf << " nao esta no voo " << codigo << "\n"; return; }
         cout << "OK: astronauta " << cpf << " removido do voo " << codigo << "\n";
     }
     void lancarVoo(int codigo) {
-        int v = achaV(codigo);
-        if (v == -1) { cout << "ERRO: voo " << codigo << " nao cadastrado\n"; return; }
-        if (voos[v].estado != "planejado") { cout << "ERRO: voo " << codigo << " nao esta planejado\n"; return; }
+        int v = vooPlanejado(codigo);
+        if (v == -1) return;
         if (voos[v].cpfs.empty()) { cout << "ERRO: voo " << codigo << " nao possui astronautas\n"; return; }
         for (auto &c : voos[v].cpfs) {
             int a = achaA(c);
