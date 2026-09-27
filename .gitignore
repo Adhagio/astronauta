@@ -1,0 +1,11 @@
+# executáveis
+agencia
+agencia.exe
+*.exe
+*.out
+
+# arquivos de dados de teste
+dados_teste.txt
+
+# build
+build/

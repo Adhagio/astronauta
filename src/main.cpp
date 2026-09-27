@@ -2,6 +2,11 @@
 #include <string>
 #include <vector>
 
+#ifdef _WIN32
+#include <fcntl.h>
+#include <io.h>
+#endif
+
 using namespace std;
 
 struct Astronauta {
@@ -140,9 +145,54 @@ struct Agencia {
         }
         if (!achou) cout << "(nenhum)\n";
     }
+    void listarAstronautas() {
+        cout << "LISTA DE ASTRONAUTAS\n";
+        cout << "== disponiveis ==\n";
+        bool achou = false;
+        for (auto &a : astros)
+            if (a.vivo && a.disponivel) {
+                achou = true;
+                cout << a.cpf << " " << a.nome << " (" << a.idade << " anos)\n";
+            }
+        if (!achou) cout << "(nenhum)\n";
+        cout << "== em voo ==\n";
+        achou = false;
+        for (auto &a : astros)
+            if (a.vivo && !a.disponivel) {
+                achou = true;
+                cout << a.cpf << " " << a.nome << " (" << a.idade << " anos)";
+                for (auto &v : voos)
+                    if (v.estado == "em curso" && v.tem(a.cpf)) { cout << " - voo " << v.codigo; break; }
+                cout << "\n";
+            }
+        if (!achou) cout << "(nenhum)\n";
+        cout << "== mortos ==\n";
+        achou = false;
+        for (auto &a : astros)
+            if (!a.vivo) {
+                achou = true;
+                cout << a.cpf << " " << a.nome << " (" << a.idade << " anos)\n";
+            }
+        if (!achou) cout << "(nenhum)\n";
+    }
+    void historico(string cpf) {
+        int a = achaA(cpf);
+        if (a == -1) { cout << "ERRO: astronauta " << cpf << " nao cadastrado\n"; return; }
+        cout << "HISTORICO DE " << astros[a].cpf << " " << astros[a].nome << "\n";
+        bool achou = false;
+        for (auto &v : voos)
+            if (v.estado != "planejado" && v.tem(cpf)) {
+                achou = true;
+                cout << "voo " << v.codigo << ": " << v.estado << "\n";
+            }
+        if (!achou) cout << "(nenhum voo)\n";
+    }
 };
 
 int main() {
+#ifdef _WIN32
+    _setmode(_fileno(stdout), _O_BINARY);
+#endif
     Agencia agencia;
     string comando;
 
@@ -185,6 +235,12 @@ int main() {
             agencia.listarVoos();
         } else if (comando == "LISTAR_MORTOS") {
             agencia.listarMortos();
+        } else if (comando == "LISTAR_ASTRONAUTAS") {
+            agencia.listarAstronautas();
+        } else if (comando == "HISTORICO") {
+            string cpf;
+            cin >> cpf;
+            agencia.historico(cpf);
         } else {
             cout << "ERRO: comando desconhecido " << comando << endl;
         }
