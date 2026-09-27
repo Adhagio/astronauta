@@ -1,4 +1,6 @@
+#include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -191,6 +193,62 @@ struct Agencia {
             }
         if (!achou) cout << "(nenhum voo)\n";
     }
+    void salvar(string arquivo) {
+        ofstream saida(arquivo);
+        if (!saida.is_open()) {
+            cout << "ERRO: nao foi possivel salvar em " << arquivo << "\n";
+            return;
+        }
+        for (auto &a : astros)
+            saida << "A;" << a.cpf << ";" << a.nome << ";" << a.idade << ";"
+                  << a.vivo << ";" << a.disponivel << "\n";
+        for (auto &v : voos) {
+            saida << "V;" << v.codigo << ";" << v.estado << ";";
+            for (int i = 0; i < (int)v.cpfs.size(); i++) {
+                if (i) saida << ",";
+                saida << v.cpfs[i];
+            }
+            saida << "\n";
+        }
+        cout << "OK: dados salvos em " << arquivo << "\n";
+    }
+    void carregar(string arquivo) {
+        ifstream entrada(arquivo);
+        if (!entrada.is_open()) {
+            cout << "ERRO: nao foi possivel carregar de " << arquivo << "\n";
+            return;
+        }
+        vector<Astronauta> novosAstros;
+        vector<Voo> novosVoos;
+        string linha;
+        while (getline(entrada, linha)) {
+            if (!linha.empty() && linha[linha.size() - 1] == '\r')
+                linha.erase(linha.size() - 1);
+            if (linha.empty()) continue;
+            stringstream ss(linha);
+            vector<string> campos;
+            string campo;
+            while (getline(ss, campo, ';')) campos.push_back(campo);
+            if (campos[0] == "A" && (int)campos.size() >= 6) {
+                Astronauta a(campos[1], campos[2], stoi(campos[3]));
+                a.vivo = campos[4] == "1";
+                a.disponivel = campos[5] == "1";
+                novosAstros.push_back(a);
+            } else if (campos[0] == "V" && (int)campos.size() >= 3) {
+                Voo v(stoi(campos[1]));
+                v.estado = campos[2];
+                if ((int)campos.size() >= 4) {
+                    stringstream lista(campos[3]);
+                    string cpf;
+                    while (getline(lista, cpf, ',')) if (!cpf.empty()) v.cpfs.push_back(cpf);
+                }
+                novosVoos.push_back(v);
+            }
+        }
+        astros = novosAstros;
+        voos = novosVoos;
+        cout << "OK: dados carregados de " << arquivo << "\n";
+    }
 };
 
 int main() {
@@ -245,6 +303,14 @@ int main() {
             string cpf;
             cin >> cpf;
             agencia.historico(cpf);
+        } else if (comando == "SALVAR") {
+            string arquivo;
+            cin >> arquivo;
+            agencia.salvar(arquivo);
+        } else if (comando == "CARREGAR") {
+            string arquivo;
+            cin >> arquivo;
+            agencia.carregar(arquivo);
         } else {
             cout << "ERRO: comando desconhecido " << comando << endl;
         }
