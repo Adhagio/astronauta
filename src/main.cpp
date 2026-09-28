@@ -40,6 +40,27 @@ struct Voo {
 struct Agencia {
     vector<Astronauta> astros;
     vector<Voo> voos;
+    bool temSnapshot = false;
+    vector<Astronauta> snapAstros;
+    vector<Voo> snapVoos;
+
+    void salvarSnapshot() {
+        snapAstros = astros;
+        snapVoos = voos;
+        temSnapshot = true;
+    }
+    void limparSnapshot() {
+        snapAstros.clear();
+        snapVoos.clear();
+        temSnapshot = false;
+    }
+    void desfazer() {
+        if (!temSnapshot) { cout << "ERRO: nada para desfazer\n"; return; }
+        astros = snapAstros;
+        voos = snapVoos;
+        limparSnapshot();
+        cout << "OK: ultimo comando desfeito\n";
+    }
 
     int achaA(string c) {
         for (int i = 0; i < (int)astros.size(); i++)
@@ -300,7 +321,14 @@ int main() {
     while (cin >> comando) {
         if (comando == "FIM") {
             break;
-        } else if (comando == "CADASTRAR_ASTRONAUTA") {
+        }
+        if (comando == "CADASTRAR_ASTRONAUTA" || comando == "CADASTRAR_VOO" ||
+            comando == "ADICIONAR_ASTRONAUTA" || comando == "REMOVER_ASTRONAUTA" ||
+            comando == "LANCAR_VOO" || comando == "EXPLODIR_VOO" ||
+            comando == "FINALIZAR_VOO" || comando == "CARREGAR")
+            agencia.salvarSnapshot();
+
+        if (comando == "CADASTRAR_ASTRONAUTA") {
             string cpf, nome;
             int idade;
             cin >> cpf >> idade;
@@ -352,6 +380,8 @@ int main() {
             string arquivo;
             cin >> arquivo;
             agencia.carregar(arquivo);
+        } else if (comando == "DESFAZER") {
+            agencia.desfazer();
         } else {
             cout << "ERRO: comando desconhecido " << comando << endl;
         }
