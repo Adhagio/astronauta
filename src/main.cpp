@@ -193,6 +193,45 @@ struct Agencia {
             }
         if (!achou) cout << "(nenhum voo)\n";
     }
+    int experiencia(string cpf) {
+        int total = 0;
+        for (auto &v : voos)
+            if (v.estado != "planejado" && v.tem(cpf)) total++;
+        return total;
+    }
+    void relatorio() {
+        int planejados = 0, emCurso = 0, sucesso = 0, explosao = 0;
+        for (auto &v : voos) {
+            if (v.estado == "planejado") planejados++;
+            else if (v.estado == "em curso") emCurso++;
+            else if (v.estado == "finalizado com sucesso") sucesso++;
+            else if (v.estado == "finalizado com explosao") explosao++;
+        }
+        int vivos = 0, mortos = 0;
+        for (auto &a : astros) {
+            if (a.vivo) vivos++;
+            else mortos++;
+        }
+        int melhor = -1, maior = 0;
+        for (int i = 0; i < (int)astros.size(); i++) {
+            int e = experiencia(astros[i].cpf);
+            if (e > maior) { maior = e; melhor = i; }
+        }
+        cout << "RELATORIO\n";
+        cout << "voos planejados: " << planejados << "\n";
+        cout << "voos em curso: " << emCurso << "\n";
+        cout << "voos finalizados com sucesso: " << sucesso << "\n";
+        cout << "voos finalizados com explosao: " << explosao << "\n";
+        cout << "astronautas cadastrados: " << astros.size() << "\n";
+        cout << "astronautas vivos: " << vivos << "\n";
+        cout << "astronautas mortos: " << mortos << "\n";
+        if (melhor == -1) cout << "astronauta mais experiente: (nenhum)\n";
+        else cout << "astronauta mais experiente: " << astros[melhor].cpf << " "
+                    << astros[melhor].nome << " (voos lancados: " << maior << ")\n";
+        int finalizados = sucesso + explosao;
+        if (finalizados == 0) cout << "taxa de sucesso: (nenhum voo finalizado)\n";
+        else cout << "taxa de sucesso: " << sucesso * 100 / finalizados << "%\n";
+    }
     void salvar(string arquivo) {
         ofstream saida(arquivo);
         if (!saida.is_open()) {
@@ -303,6 +342,8 @@ int main() {
             string cpf;
             cin >> cpf;
             agencia.historico(cpf);
+        } else if (comando == "RELATORIO") {
+            agencia.relatorio();
         } else if (comando == "SALVAR") {
             string arquivo;
             cin >> arquivo;
